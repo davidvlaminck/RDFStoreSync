@@ -1,0 +1,27 @@
+json-ld of andere inserts:
+steeds updatedatum meenemen
+
+sync_params > step > int
+RESET
+INIT
+FILL
+SYNC
+
+sync_params > fill > assets (bnode)
+assets (fill) > last_page > int
+assets (fill) > last_cursor > string
+assets (fill) > filling > (bnode) > filling > bool
+assets (fill) > filling > (bnode) > cursor > string
+assets (fill) > filling > (bnode) > update_datum > timestamp
+
+sync_params > feed > assets (bnode)
+sync_params > feed > assetrelaties (bnode)
+sync_params > feed > betrokkenerelaties (bnode)
+sync_params > feed > agents (bnode)
+
+assets (feed) > update > (bnode) > page > int
+assets (feed) > update > (bnode) > cursor > string
+assets (feed) > update > (bnode) > update_datum > timestamp
+
+
+periodiek checken voor ontbrekende assettypes, relatietypes etc indien mogelijk
