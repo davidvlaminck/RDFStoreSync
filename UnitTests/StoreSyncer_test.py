@@ -103,6 +103,8 @@ def test_perform_init_store():
 
     assert store_syncer.get_step() == 2
 
+    store_syncer.store.endpoint.serialize(destination="params.jsonld", format='json-ld')
+
 
 def test_get_step():
     store_syncer = create_empty_store()

@@ -3,13 +3,15 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+from EMInfraImporter import EMInfraImporter
+from FillManager import FillManager
 from ResourceEnum import ResourceEnum
 
 
 class StoreSyncer:
-    def __init__(self, store, eminfra_importer):
+    def __init__(self, store, eminfra_importer: EMInfraImporter):
         self.store = store
-        self.eminfra_importer = eminfra_importer
+        self.eminfra_importer: EMInfraImporter = eminfra_importer
 
     def run(self):
         """
@@ -25,7 +27,9 @@ class StoreSyncer:
             elif step == 1:
                 self._perform_init_store()
             elif step == 2:
-                raise NotImplementedError('step 2 not implemented')
+                self._perform_filling()
+            elif step == 3:
+                raise NotImplementedError('step 3 not implemented')
 
     def check_for_sync_params(self) -> bool:
         """
@@ -92,11 +96,11 @@ INSERT DATA {
             GRAPH sp:param { """
 
         for feed in feeds:
-            insert_query += f"""sp:param sp:fill [
-                        sp:label "{feed}" ;
-                        sp:last_page "{last_page_dict[feed]['page']}"^^xsd:integer  ;
-                        sp:last_event_uuid "{last_page_dict[feed]['event_uuid']}" ;
-                    ] . """
+            insert_query += f"""
+            sp:param sp:fill sp:{feed} .
+            sp:{feed} sp:label "{feed}" .
+            sp:{feed} sp:last_page "{last_page_dict[feed]['page']}"^^xsd:integer . 
+            sp:{feed} sp:last_event_uuid "{last_page_dict[feed]['event_uuid']}" . """
         insert_query += "}};"
 
         self.store.update_query(insert_query)
@@ -146,4 +150,15 @@ INSERT DATA {
         result_step = self.store.query(select_q)
         return list(result_step)[0][0].toPython()
 
-# dt : "2005-01-01T00:00:00Z"^^xsd:dateTime
+    def _perform_filling(self):
+        feeds = [ResourceEnum.agents]
+
+        for feed_type in feeds:
+            # create fill manager and start filling
+            fill_manager = self._create_fill_manager(feed_type=feed_type)
+            fill_manager.fill()
+
+    def _create_fill_manager(self, feed_type: ResourceEnum) -> FillManager:
+        return FillManager(store=self.store, eminfra_importer=self.eminfra_importer, feed_type=feed_type)
+
+

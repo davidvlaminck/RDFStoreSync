@@ -10,7 +10,7 @@ SYNC
 sync_params > fill > assets (bnode)
 assets (fill) > last_page > int
 assets (fill) > last_cursor > string
-assets (fill) > filling > (bnode) > filling > bool
+assets (fill) > filling > (bnode) > state > bool
 assets (fill) > filling > (bnode) > cursor > string
 assets (fill) > filling > (bnode) > update_datum > timestamp
 
