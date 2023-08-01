@@ -26,7 +26,9 @@ class JsonLdCompleter:
                 'abs': 'https://wegenenverkeer.data.vlaanderen.be/ns/abstracten#',
                 'geosparql': 'http://www.opengis.net/ont/geosparql#',
                 'onderdeel': 'https://wegenenverkeer.data.vlaanderen.be/ns/onderdeel#',
-                'installatie': 'https://wegenenverkeer.data.vlaanderen.be/ns/installatie#'
+                'installatie': 'https://wegenenverkeer.data.vlaanderen.be/ns/installatie#',
+                'purl': 'http://purl.org/dc/terms/',
+                'schema': 'https://schema.org/'
             }}
         return json.dumps(graph_dict)
 

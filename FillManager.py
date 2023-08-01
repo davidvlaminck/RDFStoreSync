@@ -28,6 +28,9 @@ class FillManager:
                 resource=self.feed_type, cursor=fetching_cursor)
             cursor = response_object.headers['em-paging-next-cursor']
             asset_graph = response_object.graph
+
+            # TODO enhance asset_graph to be more Linked Data
+
             dt = datetime.datetime.utcnow()
             dt_str = dt.isoformat() + 'Z'
 
@@ -40,7 +43,7 @@ class FillManager:
                             {
                                 'http://sync.params/state': (cursor != ''),
                                 'http://sync.params/cursor': cursor,
-                                'http://sync.params/update_datum':
+                                'http://sync.params/update_timestamp':
                                     {'@value': dt_str,
                                      '@type': 'http://www.w3.org/2001/XMLSchema#dateTime'}
                             }
@@ -61,48 +64,61 @@ class FillManager:
             if cursor == '':
                 break
 
+        # TODO clean up temp files
 
-            # save jsonld to disk
-            # import jsonld file into store
+        self._clean_filling_params()
 
-        # assets (fill) > filling > (bnode) > filling_state > bool
-        # check if the boolean exists
-        # if not, create it
-        # if yes, check if it is true, if so, continue
-        # if false, stop
-
-        # stop when all filling booleans are false
-        # if all filling booleans are true, set step to 3
-
-        # dt : "2005-01-01T00:00:00Z"^^xsd:dateTime
-
-    def _get_filling_params_2(self) -> dict | None:
-        select_q = f"""PREFIX sp:    <http://sync.params/>
-        SELECT ?state ?cursor ?update_datum WHERE {{ GRAPH sp:param {{ 
-            sp:param sp:fill ?bn .
-            ?bn sp:label "{self.feed_type.value}" .
-            ?bn sp:filling ?fill_node .
-            ?fill_node sp:state ?state .
-            ?fill_node sp:cursor ?cursor .
-            ?fill_node sp:update_datum ?update_datum
-        }} }}"""
-        result = self.store.query(select_q)
-        if len(result) == 0:
-            return None
-        return list(result)[0].asdict()
-
-    def _get_filling_params(self) -> dict | None:
-        select_q = f"""PREFIX sp:    <http://sync.params/>
-        SELECT ?state ?cursor ?max_update_datum 
+    def _clean_filling_params(self) -> dict | None:
+        # clean up triples
+        # delete all triple with update_timestamp earlier than the max
+        delete_q = f"""PREFIX sp:    <http://sync.params/>
+        DELETE {{
+            GRAPH sp:param {{
+                ?bn sp:filling ?fill_node .
+                ?fill_node sp:state ?state .
+                ?fill_node sp:cursor ?cursor .
+                ?fill_node sp:update_timestamp ?update_timestamp 
+                 
+            }} 
+        }}
         WHERE {{ 
             {{
-                SELECT (MAX(?update_datum) as ?max_update_datum)
+                SELECT (MAX(?update_timestamp) as ?max_update_timestamp)
                 WHERE {{ 
                     GRAPH sp:param {{ 
                         sp:param sp:fill ?bn .
                         ?bn sp:label "{self.feed_type.value}" .
                         ?bn sp:filling ?fill_node .
-                        ?fill_node sp:update_datum ?update_datum 
+                        ?fill_node sp:update_timestamp ?update_timestamp 
+                    }} 
+                }} 
+            }}
+            GRAPH sp:param {{ 
+                sp:param sp:fill ?bn .
+                ?bn sp:label "{self.feed_type.value}" .
+                ?bn sp:filling ?fill_node .
+                ?fill_node sp:state ?state .
+                ?fill_node sp:cursor ?cursor .
+                ?fill_node sp:update_timestamp ?update_timestamp 
+            }} 
+            FILTER (?update_timestamp != ?max_update_timestamp)
+        }}
+        """
+        self.store.update_query(delete_q)
+
+    def _get_filling_params(self) -> dict | None:
+        """Fetches the filling params for the resource. Only return the params with the latest update_timestamp"""
+        select_q = f"""PREFIX sp:    <http://sync.params/>
+        SELECT ?state ?cursor ?max_update_timestamp 
+        WHERE {{ 
+            {{
+                SELECT (MAX(?update_timestamp) as ?max_update_timestamp)
+                WHERE {{ 
+                    GRAPH sp:param {{ 
+                        sp:param sp:fill ?bn .
+                        ?bn sp:label "{self.feed_type.value}" .
+                        ?bn sp:filling ?fill_node .
+                        ?fill_node sp:update_timestamp ?update_timestamp 
                     }} 
                 }} 
             }}
@@ -112,7 +128,7 @@ class FillManager:
             ?bn sp:filling ?fill_node .
             ?fill_node sp:state ?state .
             ?fill_node sp:cursor ?cursor .
-            ?fill_node sp:update_datum ?max_update_datum
+            ?fill_node sp:update_timestamp ?max_update_timestamp
         }} }}
         """
         result = self.store.query(select_q)

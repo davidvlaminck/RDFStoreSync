@@ -158,6 +158,10 @@ INSERT DATA {
             fill_manager = self._create_fill_manager(feed_type=feed_type)
             fill_manager.fill()
 
+        # loop and check for all fill_manager to have correct filling params
+        # up the step to sync
+        # clean up the filling params
+
     def _create_fill_manager(self, feed_type: ResourceEnum) -> FillManager:
         return FillManager(store=self.store, eminfra_importer=self.eminfra_importer, feed_type=feed_type)
 

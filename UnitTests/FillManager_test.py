@@ -104,9 +104,32 @@ def test_fill_multiple_fills():
     select_q = """SELECT ?agent WHERE { GRAPH ?g { ?agent a <http://purl.org/dc/terms/Agent> } }"""
     result = fill_manager.store.query(select_q)
     assert len(result) == 4
-    #
-    # assert result_dict['page'].toPython() == 20
-    # assert result_dict['event_uuid'].toPython() == '00000001-0000-0000-0000-000000000001'
 
-
-
+    select_q = f"""PREFIX sp:    <http://sync.params/>
+    SELECT ?state ?cursor ?update_timestamp 
+    WHERE {{ 
+        {{
+            SELECT (MAX(?update_timestamp) as ?max_update_timestamp)
+            WHERE {{ 
+                GRAPH sp:param {{ 
+                    sp:param sp:fill ?bn .
+                    ?bn sp:label "{fill_manager.feed_type.value}" .
+                    ?bn sp:filling ?fill_node .
+                    ?fill_node sp:update_timestamp ?update_timestamp 
+                }} 
+            }} 
+        }}
+        GRAPH sp:param {{ 
+        sp:param sp:fill ?bn .
+        ?bn sp:label "{fill_manager.feed_type.value}" .
+        ?bn sp:filling ?fill_node .
+        ?fill_node sp:state ?state .
+        ?fill_node sp:cursor ?cursor .
+        ?fill_node sp:update_timestamp ?update_timestamp
+        }} 
+    FILTER (?update_timestamp != ?max_update_timestamp)
+    }}
+    """
+    result = fill_manager.store.query(select_q)
+    assert len(result) == 0
+    fill_manager.print_quads()
