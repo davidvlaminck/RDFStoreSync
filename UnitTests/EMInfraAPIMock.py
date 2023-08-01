@@ -128,3 +128,41 @@ class EMInfraAPIMock:
                 "tz:Agent.voId": "00000000-0000-0000-0002-000000000000"
             }
         ]}
+
+    agents_second_page = {
+        "@graph": [
+            {
+                "@type": "http://purl.org/dc/terms/Agent",
+                "@id": "https://data.awvvlaanderen.be/id/asset/00000000-0000-0000-0003-000000000000-cHVybDpBZ2VudA",
+                "purl:Agent.agentId": {
+                    "DtcIdentificator.identificator": "00000000-0000-0000-0003-000000000000-cHVybDpBZ2VudA",
+                    "DtcIdentificator.toegekendDoor": "AWV"
+                },
+                "purl:Agent.contactinfo": [
+                    {
+                        "schema:ContactPoint.telefoon": "+3212345678",
+                        "schema:ContactPoint.email": "mock@mock.be"
+                    }],
+                "purl:Agent.naam": "Agent 3",
+                "tz:Agent.voId": "00000000-0000-0000-0003-000000000000"
+            }
+        ]}
+
+    agents_third_page = {
+        "@graph": [
+            {
+                "@type": "http://purl.org/dc/terms/Agent",
+                "@id": "https://data.awvvlaanderen.be/id/asset/00000000-0000-0000-0004-000000000000-cHVybDpBZ2VudA",
+                "purl:Agent.agentId": {
+                    "DtcIdentificator.identificator": "00000000-0000-0000-0004-000000000000-cHVybDpBZ2VudA",
+                    "DtcIdentificator.toegekendDoor": "AWV"
+                },
+                "purl:Agent.contactinfo": [
+                    {
+                        "schema:ContactPoint.telefoon": "+3212345678",
+                        "schema:ContactPoint.email": "mock@mock.be"
+                    }],
+                "purl:Agent.naam": "Agent 4",
+                "tz:Agent.voId": "00000000-0000-0000-0004-000000000000"
+            }
+        ]}

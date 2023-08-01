@@ -16,10 +16,20 @@ from UnitTests.EMInfraAPIMock import EMInfraAPIMock
 
 
 def return_fake_perform_post_request(*args, **kwargs):
-    if kwargs['url'] == 'core/api/otl/agents/search' and kwargs['json_data']['fromCursor'] == None:
+    if kwargs['url'] == 'core/api/otl/agents/search' and kwargs['json_data']['fromCursor'] is None:
         response = Mock(Response)
         response.content = json.dumps(EMInfraAPIMock.agents_first_page).encode('utf-8')
         response.headers = {'em-paging-next-cursor': 'cursor1'}
+        return response
+    elif kwargs['url'] == 'core/api/otl/agents/search' and kwargs['json_data']['fromCursor'] == 'cursor1':
+        response = Mock(Response)
+        response.content = json.dumps(EMInfraAPIMock.agents_second_page).encode('utf-8')
+        response.headers = {'em-paging-next-cursor': 'cursor2'}
+        return response
+    elif kwargs['url'] == 'core/api/otl/agents/search' and kwargs['json_data']['fromCursor'] == 'cursor2':
+        response = Mock(Response)
+        response.content = json.dumps(EMInfraAPIMock.agents_third_page).encode('utf-8')
+        response.headers = {'em-paging-next-cursor': ''}
         return response
     raise Exception(f'Could not return fake post request for url: {kwargs["url"]} and params: {kwargs["json_data"]}')
 
@@ -50,15 +60,53 @@ def create_fill_manager(feed_type) -> FillManager:
     return store_syncer._create_fill_manager(feed_type)
 
 
-def test_get_filling_param():
+def test_get_filling_param_empty():
     fill_manager = create_fill_manager(ResourceEnum.agents)
     fill_param = fill_manager._get_filling_params()
     assert fill_param is None
 
 
-def test_fill():
+def test_get_filling_param_one_fill():
     fill_manager = create_fill_manager(ResourceEnum.agents)
-    fill_param = fill_manager.fill()
+    fill_param = fill_manager._get_filling_params()
+    assert fill_param is None
+
+    def new_return_fake_perform_post_request(*args, **kwargs):
+        if kwargs['url'] == 'core/api/otl/agents/search' and kwargs['json_data']['fromCursor'] is None:
+            response = Mock(Response)
+            response.content = json.dumps(EMInfraAPIMock.agents_first_page).encode('utf-8')
+            response.headers = {'em-paging-next-cursor': 'cursor1'}
+            return response
+        elif kwargs['url'] == 'core/api/otl/agents/search' and kwargs['json_data']['fromCursor'] == 'cursor1':
+            response = Mock(Response)
+            response.content = json.dumps(EMInfraAPIMock.agents_second_page).encode('utf-8')
+            response.headers = {'em-paging-next-cursor': ''}
+            return response
+
+    fill_manager.eminfra_importer.request_handler.perform_post_request = new_return_fake_perform_post_request
+    fill_manager.fill()
+
+    fill_param = fill_manager._get_filling_params()
+    assert fill_param is not None
+    assert str(fill_param['cursor']) == ''
+    assert not bool(fill_param['state'])
+
+
+def test_fill_multiple_fills():
+    fill_manager = create_fill_manager(ResourceEnum.agents)
+    fill_manager.fill(False)
+
+    fill_param = fill_manager._get_filling_params()
+    assert fill_param is not None
+    assert str(fill_param['cursor']) == ''
+    assert not bool(fill_param['state'])
+
+    select_q = """SELECT ?agent WHERE { GRAPH ?g { ?agent a <http://purl.org/dc/terms/Agent> } }"""
+    result = fill_manager.store.query(select_q)
+    assert len(result) == 4
+    #
+    # assert result_dict['page'].toPython() == 20
+    # assert result_dict['event_uuid'].toPython() == '00000001-0000-0000-0000-000000000001'
 
 
 
