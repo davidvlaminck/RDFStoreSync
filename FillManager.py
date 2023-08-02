@@ -20,11 +20,11 @@ class FillManager:
     def fill(self, write_file_to_disk: bool = True):
         while True:
             filling_params = self._get_filling_params()
-            if filling_params is not None and not bool(filling_params['state']):
+            if filling_params != {} and not bool(filling_params['state']):
                 break
 
             fetching_cursor = None
-            if filling_params is not None:
+            if filling_params != {}:
                 fetching_cursor = str(filling_params['cursor'])
             response_object = self.eminfra_importer.get_objects_from_oslo_search_endpoint(
                 resource=self.feed_type, cursor=fetching_cursor)
@@ -138,10 +138,7 @@ class FillManager:
             ?fill_node sp:update_timestamp ?max_update_timestamp
         }} }}
         """
-        result = self.store.query(select_q)
-        if len(result) == 0:
-            return None
-        return list(result)[0].asdict()
+        return self.store.query_single_row(select_q)
 
     def print_quads(self, limit: int = 100):
         print(self.store.endpoint.serialize(format='nquads', limit=limit))

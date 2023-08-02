@@ -63,13 +63,13 @@ def create_fill_manager(feed_type) -> FillManager:
 def test_get_filling_param_empty():
     fill_manager = create_fill_manager(ResourceEnum.agents)
     fill_param = fill_manager._get_filling_params()
-    assert fill_param is None
+    assert fill_param == {}
 
 
 def test_get_filling_param_one_fill():
     fill_manager = create_fill_manager(ResourceEnum.agents)
     fill_param = fill_manager._get_filling_params()
-    assert fill_param is None
+    assert fill_param == {}
 
     def new_return_fake_perform_post_request(*args, **kwargs):
         if kwargs['url'] == 'core/api/otl/agents/search' and kwargs['json_data']['fromCursor'] is None:
@@ -87,7 +87,7 @@ def test_get_filling_param_one_fill():
     fill_manager.fill()
 
     fill_param = fill_manager._get_filling_params()
-    assert fill_param is not None
+    assert fill_param != {}
     assert str(fill_param['cursor']) == ''
     assert not bool(fill_param['state'])
 
@@ -97,7 +97,7 @@ def test_fill_multiple_fills():
     fill_manager.fill(False)
 
     fill_param = fill_manager._get_filling_params()
-    assert fill_param is not None
+    assert fill_param != {}
     assert str(fill_param['cursor']) == ''
     assert not bool(fill_param['state'])
 

@@ -39,8 +39,8 @@ class StoreSyncer:
         """
         Check if the store has the sync parameters.
         """
-        result = self.store.query("""ASK { GRAPH <http://sync.params/param> { ?s ?p ?o }}""")
-        return bool(list(result)[0])
+        return self.store.query_single("""SELECT ?s WHERE { GRAPH <http://sync.params/param> { ?s ?p ?o }} LIMIT 1""",
+                                       param_name='s', datatype=str)
 
     def _init_store(self):
         insert_query = """
@@ -64,9 +64,9 @@ INSERT DATA {
 
     def reset_store_insert(self):
         insert_query = """
-        PREFIX sp:  <http://sync.params/>
-        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-        DROP GRAPH sp:param;
+        PREFIX sp:  <http://sync.params/> 
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+        DROP GRAPH sp:param;        
         INSERT DATA { 
             GRAPH sp:param {
                 sp:param sp:step "0"^^xsd:integer
@@ -148,11 +148,16 @@ INSERT DATA {
             'page': current_page_num,
             'last_update_utc': None}
 
-    def get_step(self):
+    def get_step_2(self):
         select_q = """PREFIX sp:    <http://sync.params/>
         SELECT ?o WHERE { GRAPH sp:param { sp:param sp:step ?o}}"""
         result_step = self.store.query(select_q)
         return list(result_step)[0][0].toPython()
+
+    def get_step(self):
+        select_q = """PREFIX sp:    <http://sync.params/>
+        SELECT ?o WHERE { GRAPH sp:param { sp:param sp:step ?o}}"""
+        return self.store.query_single(select_q, param_name='o', datatype=int)
 
     def _perform_filling(self):
         feeds = [ResourceEnum.agents]
