@@ -4,6 +4,7 @@ from pathlib import Path
 
 from AbstractSparqlEndpoint import AbstractSparqlEndpoint
 from EMInfraImporter import EMInfraImporter
+from JsonLdCompleter import JsonLdCompleter
 from ResourceEnum import ResourceEnum
 
 CURRENT_DIR = Path(__file__).parent
@@ -14,6 +15,7 @@ class FillManager:
         self.feed_type = feed_type
         self.store = store
         self.eminfra_importer = eminfra_importer
+        self.jsonld_completer = JsonLdCompleter()
 
     def fill(self, write_file_to_disk: bool = True):
         while True:
@@ -26,10 +28,12 @@ class FillManager:
                 fetching_cursor = str(filling_params['cursor'])
             response_object = self.eminfra_importer.get_objects_from_oslo_search_endpoint(
                 resource=self.feed_type, cursor=fetching_cursor)
-            cursor = response_object.headers['em-paging-next-cursor']
+
+            cursor = response_object.headers.get('em-paging-next-cursor', '')
             asset_graph = response_object.graph
 
-            # TODO enhance asset_graph to be more Linked Data
+            # enhance asset_graph to be more Linked Data
+            self.jsonld_completer.enhance_asset_graph(asset_graph)
 
             dt = datetime.datetime.utcnow()
             dt_str = dt.isoformat() + 'Z'
@@ -53,8 +57,7 @@ class FillManager:
             assets_ld_string = json.dumps(asset_graph)
 
             if write_file_to_disk:
-                this_directory = CURRENT_DIR
-                file_path = Path(this_directory / 'temp' / f'temp_{self.feed_type.value}.jsonld')
+                file_path = Path(CURRENT_DIR / 'temp' / f'temp_{self.feed_type.value}.jsonld')
                 with open(file_path, 'w') as f:
                     f.write(assets_ld_string)
                 self.store.import_file(file_path=file_path, format='json-ld')
@@ -64,11 +67,15 @@ class FillManager:
             if cursor == '':
                 break
 
-        # TODO clean up temp files
+        # clean up temp file
+        if write_file_to_disk:
+            file_path = Path(CURRENT_DIR / 'temp' / f'temp_{self.feed_type.value}.jsonld')
+            if Path.exists(file_path):
+                file_path.unlink()
 
         self._clean_filling_params()
 
-    def _clean_filling_params(self) -> dict | None:
+    def _clean_filling_params(self):
         # clean up triples
         # delete all triple with update_timestamp earlier than the max
         delete_q = f"""PREFIX sp:    <http://sync.params/>

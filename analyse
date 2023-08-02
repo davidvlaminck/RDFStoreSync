@@ -2,10 +2,10 @@ json-ld of andere inserts:
 steeds updatedatum meenemen
 
 sync_params > step > int
-RESET
-INIT
-FILL
-SYNC
+RESET 0
+INIT 1
+FILL 2
+SYNC 3
 
 sync_params > fill > assets (bnode)
 assets (fill) > last_page > int

@@ -1,36 +1,33 @@
-import json
-import logging
 import sqlite3
 from pathlib import Path
 
+CURRENT_DIR = Path(__file__).parent
+
 
 class JsonLdCompleter:
-    def __init__(self, otl_db_path: Path):
-        self.valid_uris = self.get_otl_uris_from_db(otl_db_path)
+    context_dir = {
+        'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+        'asset': 'https://data.awvvlaanderen.be/id/asset/',
+        'lgc': 'https://wegenenverkeer.data.vlaanderen.be/oef/legacy/',
+        'ins': 'https://wegenenverkeer.data.vlaanderen.be/oef/inspectie/',
+        'ond': 'https://wegenenverkeer.data.vlaanderen.be/oef/onderhoud/',
+        'loc': 'https://wegenenverkeer.data.vlaanderen.be/oef/locatie/',
+        'tz': 'https://wegenenverkeer.data.vlaanderen.be/oef/toezicht/',
+        'geo': 'https://wegenenverkeer.data.vlaanderen.be/oef/geometrie/',
+        'grp': 'https://wegenenverkeer.data.vlaanderen.be/oef/groepering/',
+        'bz': 'https://wegenenverkeer.data.vlaanderen.be/oef/bezoekfiche/',
+        'imel': 'https://wegenenverkeer.data.vlaanderen.be/ns/implementatieelement#',
+        'app': 'http://example.org/ApplicationSchema#',
+        'abs': 'https://wegenenverkeer.data.vlaanderen.be/ns/abstracten#',
+        'geosparql': 'http://www.opengis.net/ont/geosparql#',
+        'onderdeel': 'https://wegenenverkeer.data.vlaanderen.be/ns/onderdeel#',
+        'installatie': 'https://wegenenverkeer.data.vlaanderen.be/ns/installatie#',
+        'purl': 'http://purl.org/dc/terms/',
+        'schema': 'https://schema.org/'
+    }
 
-    def transform_json_ld(self, asset_dict):
-        new_list = [self.fix_dict(asset) for asset in asset_dict]
-        graph_dict = {'@graph': new_list, '@context': {
-                'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-                'asset': 'https://data.awvvlaanderen.be/id/asset/',
-                'lgc': 'https://wegenenverkeer.data.vlaanderen.be/oef/legacy/',
-                'ins': 'https://wegenenverkeer.data.vlaanderen.be/oef/inspectie/',
-                'ond': 'https://wegenenverkeer.data.vlaanderen.be/oef/onderhoud/',
-                'loc': 'https://wegenenverkeer.data.vlaanderen.be/oef/locatie/',
-                'tz': 'https://wegenenverkeer.data.vlaanderen.be/oef/toezicht/',
-                'geo': 'https://wegenenverkeer.data.vlaanderen.be/oef/geometrie/',
-                'grp': 'https://wegenenverkeer.data.vlaanderen.be/oef/groepering/',
-                'bz': 'https://wegenenverkeer.data.vlaanderen.be/oef/bezoekfiche/',
-                'imel': 'https://wegenenverkeer.data.vlaanderen.be/ns/implementatieelement#',
-                'app': 'http://example.org/ApplicationSchema#',
-                'abs': 'https://wegenenverkeer.data.vlaanderen.be/ns/abstracten#',
-                'geosparql': 'http://www.opengis.net/ont/geosparql#',
-                'onderdeel': 'https://wegenenverkeer.data.vlaanderen.be/ns/onderdeel#',
-                'installatie': 'https://wegenenverkeer.data.vlaanderen.be/ns/installatie#',
-                'purl': 'http://purl.org/dc/terms/',
-                'schema': 'https://schema.org/'
-            }}
-        return json.dumps(graph_dict)
+    def __init__(self, otl_db_path: Path = Path(CURRENT_DIR / 'OTL.db')):
+        self.valid_uris = self.get_otl_uris_from_db(otl_db_path)
 
     @staticmethod
     def transform_if_http_value(value):
@@ -65,7 +62,7 @@ class JsonLdCompleter:
         return new_dict
 
     @staticmethod
-    def get_otl_uris_from_db(otl_db_path):
+    def get_otl_uris_from_db(otl_db_path) -> dict:
         con = sqlite3.connect(otl_db_path)
         cur = con.cursor()
         d = {}
@@ -84,3 +81,15 @@ UNION SELECT uri FROM OSLODatatypeUnionAttributen""")
 
         con.close()
         return d
+
+    def enhance_asset_graph(self, asset_graph):
+        asset_graph['@context'] = self.context_dir
+        new_asset_list = []
+        for asset in asset_graph['@graph']:
+            fixed_dict = self.fix_dict(asset)
+            new_asset_list.append({
+                "@id": fixed_dict['@id'],
+                '@graph': [fixed_dict]
+            })
+
+        asset_graph['@graph'] = new_asset_list

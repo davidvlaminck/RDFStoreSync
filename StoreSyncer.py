@@ -23,12 +23,16 @@ class StoreSyncer:
 
             step = self.get_step()
             if step == 0:
+                logging.info('step 0: resetting the store')
                 self._reset_store()
             elif step == 1:
+                logging.info('step 1: initializing the store')
                 self._perform_init_store()
             elif step == 2:
+                logging.info('step 2: filling the store')
                 self._perform_filling()
             elif step == 3:
+                logging.info('step 3: syncing the store')
                 raise NotImplementedError('step 3 not implemented')
 
     def check_for_sync_params(self) -> bool:

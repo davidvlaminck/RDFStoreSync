@@ -37,6 +37,17 @@ class AbstractSparqlEndpoint(object):
         r = int(list(result)[0][0])
         return r
 
+    def count_named_graphs(self) -> int:
+        """
+        Count the number of named graphs in the SPARQL endpoint
+
+        @return: The number of named graphs.
+        @rtype: int
+        """
+        result = self.query("""SELECT (COUNT(?graph) AS ?named_graphs) { GRAPH ?graph { ?s ?p ?o } }""")
+        r = int(list(result)[0][0])
+        return r
+
     def clear_all(self):
         """
         Clear all triples in the SPARQL endpoint.
