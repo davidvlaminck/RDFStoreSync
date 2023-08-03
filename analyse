@@ -35,3 +35,29 @@ select ?s ?p ?o where {
             || (CONTAINS(str(?p), ':') && !CONTAINS(str(?p), 'https:') && !CONTAINS(str(?p), 'http:'))) .
     }
 } limit 100
+
+
+# check for missing assets in assetrelaties
+PREFIX imel: <https://wegenenverkeer.data.vlaanderen.be/ns/implementatieelement#>
+
+SELECT ?rel ?assettype ?bron ?doel ?h ?i
+WHERE {
+    GRAPH ?g {
+        ?rel a ?assettype .
+        FILTER (CONTAINS(str(?rel), "relatie")) .
+        ?rel imel:RelatieObject.bron ?bron .
+        ?rel imel:RelatieObject.doel ?doel .
+        FILTER(
+        	NOT EXISTS {
+                GRAPH ?h {?s1 ?p1 ?o1}.
+                FILTER(?h = ?bron)
+            } ||
+            NOT EXISTS {
+                GRAPH ?i {?s2 ?p2 ?o2}.
+                FILTER(?i = ?doel)
+            }
+        )
+    }
+}
+
+LIMIT 5

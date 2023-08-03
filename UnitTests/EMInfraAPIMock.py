@@ -166,3 +166,49 @@ class EMInfraAPIMock:
                 "tz:Agent.voId": "00000000-0000-0000-0004-000000000000"
             }
         ]}
+    assets_first_page = {
+        "@graph": [{
+            "@type": "https://lgc.data.wegenenverkeer.be/ns/installatie#Kast",
+            "@id": "https://data.awvvlaanderen.be/id/asset/00000000-0000-0000-0001-000000000000-bGdjOmluc3RhbGxhdGllI0thc3Q",
+            "tz:Toezicht.toezichter": {
+                "tz:DtcToezichter.gebruikersnaam": "toezichter1",
+                "tz:DtcToezichter.email": "toezichter1@mow.vlaanderen.be",
+                "tz:DtcToezichter.naam": "naam",
+                "tz:DtcToezichter.id": "00000000-0001-0000-0000-000000000000",
+                "tz:DtcToezichter.voornaam": "voornaam",
+                "tz:DtcToezichter.voId": "00000001-0000-0000-0000-000000000000"
+            },
+            "tz:Schadebeheerder.schadebeheerder": {
+                "tz:DtcBeheerder.naam": "District Rood",
+                "tz:DtcBeheerder.referentie": "998"
+            },
+            "tz:Toezicht.toezichtgroep": {
+                "tz:DtcToezichtGroep.id": "00000000-0000-0000-0000-000000000001",
+                "tz:DtcToezichtGroep.referentie": "toezichtgroep1",
+                "tz:DtcToezichtGroep.naam": "toezichtgroep1"
+            }
+        }]
+    }
+    assets_second_page = {
+        "@graph": [{
+            "@type": "https://lgc.data.wegenenverkeer.be/ns/installatie#Kast",
+            "@id": "https://data.awvvlaanderen.be/id/asset/00000000-0000-0000-0002-000000000000-bGdjOmluc3RhbGxhdGllI0thc3Q",
+            "tz:Toezicht.toezichter": {
+                "tz:DtcToezichter.gebruikersnaam": "toezichter2",
+                "tz:DtcToezichter.email": "toezichter2@mow.vlaanderen.be",
+                "tz:DtcToezichter.naam": "naam",
+                "tz:DtcToezichter.id": "00000000-0002-0000-0000-000000000000",
+                "tz:DtcToezichter.voornaam": "voornaam",
+                "tz:DtcToezichter.voId": "00000002-0000-0000-0000-000000000000"
+            },
+            "tz:Schadebeheerder.schadebeheerder": {
+                "tz:DtcBeheerder.naam": "District Blauw",
+                "tz:DtcBeheerder.referentie": "999"
+            },
+            "tz:Toezicht.toezichtgroep": {
+                "tz:DtcToezichtGroep.id": "00000000-0000-0000-0000-000000000002",
+                "tz:DtcToezichtGroep.referentie": "toezichtgroep2",
+                "tz:DtcToezichtGroep.naam": "toezichtgroep2"
+            }
+        }]
+    }

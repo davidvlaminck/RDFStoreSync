@@ -16,7 +16,7 @@ class FillManager:
         self.feed_type = feed_type
         self.store = store
         self.eminfra_importer = eminfra_importer
-        self.jsonld_completer = JsonLdCompleter()
+        self.jsonld_completer = JsonLdCompleter(self.feed_type)
 
     def fill(self, write_file_to_disk: bool = True):
         cycle_count = 0

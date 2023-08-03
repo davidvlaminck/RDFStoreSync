@@ -31,5 +31,5 @@ if __name__ == '__main__':
 
     graphdb_endpoint = GraphDbEndpoint(url='http://localhost:7200/repositories/awvinfra')
     store_syncer = StoreSyncer(store=graphdb_endpoint, eminfra_importer=eminfra_importer)
-    store_syncer.reset_store_insert()
+    # store_syncer.reset_store_insert()
     store_syncer.run()
