@@ -160,7 +160,7 @@ INSERT DATA {
         return self.store.query_single(select_q, param_name='o', datatype=int)
 
     def _perform_filling(self):
-        feeds = [ResourceEnum.agents]
+        feeds = [ResourceEnum.assets]
 
         for feed_type in feeds:
             # create fill manager and start filling

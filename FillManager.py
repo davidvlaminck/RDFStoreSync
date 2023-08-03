@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 from pathlib import Path
 
 from AbstractSparqlEndpoint import AbstractSparqlEndpoint
@@ -18,7 +19,9 @@ class FillManager:
         self.jsonld_completer = JsonLdCompleter()
 
     def fill(self, write_file_to_disk: bool = True):
+        cycle_count = 0
         while True:
+            cycle_count += 1
             filling_params = self._get_filling_params()
             if filling_params != {} and not bool(filling_params['state']):
                 break
@@ -42,7 +45,7 @@ class FillManager:
                 {
                     "@id": 'http://sync.params/param',
                     '@graph': [{
-                        '@id': 'http://sync.params/agents',
+                        '@id': f'http://sync.params/{self.feed_type.value}',
                         'http://sync.params/filling': [
                             {
                                 'http://sync.params/state': (cursor != ''),
@@ -66,6 +69,13 @@ class FillManager:
 
             if cursor == '':
                 break
+
+            if cycle_count == 50:
+                cycle_count = 0
+                self._clean_filling_params()
+
+        # TODO iterate over all assets and remove toezichter/toezichtgroep/schadebeheerder data and create
+        #  seperate nodes for them
 
         # clean up temp file
         if write_file_to_disk:
@@ -112,6 +122,7 @@ class FillManager:
         }}
         """
         self.store.update_query(delete_q)
+        logging.info(f'Did some cleaning for filling params of {self.feed_type.value}')
 
     def _get_filling_params(self) -> dict | None:
         """Fetches the filling params for the resource. Only return the params with the latest update_timestamp"""

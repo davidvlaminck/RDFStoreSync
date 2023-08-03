@@ -25,3 +25,13 @@ assets (feed) > update > (bnode) > update_datum > timestamp
 
 
 periodiek checken voor ontbrekende assettypes, relatietypes etc indien mogelijk
+
+# check for ":" in subject, predicate or object
+select ?s ?p ?o where {
+	GRAPH ?g {
+        ?s ?p ?o .
+        FILTER ((CONTAINS(str(?o), ':') && !CONTAINS(str(?o), 'https:') && !CONTAINS(str(?o), 'http:') && !DATATYPE(?o) = xsd:dateTime)
+            || (CONTAINS(str(?s), ':') && !CONTAINS(str(?s), 'https:') && !CONTAINS(str(?s), 'http:'))
+            || (CONTAINS(str(?p), ':') && !CONTAINS(str(?p), 'https:') && !CONTAINS(str(?p), 'http:'))) .
+    }
+} limit 100
